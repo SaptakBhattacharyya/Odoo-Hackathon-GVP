@@ -86,8 +86,7 @@ export default function LoginPage() {
             });
             if (authError) throw authError;
 
-            // The trigger will auto-create the user profile.
-            // Check if auto-approved (first manager)
+            //Login Screen Logic with google auth and Manager Approval
             if (authData.user) {
                 const { data: profile } = await supabase
                     .from('users')
