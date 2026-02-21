@@ -1,43 +1,38 @@
-const drivers = [
-    { name: 'Marcus Johnson', score: 95, trips: 234, status: 'Active', license: 'Valid', licenseExp: 'Dec 2027', avatar: 'MJ', violations: 0 },
-    { name: 'Sarah Davis', score: 92, trips: 198, status: 'Active', license: 'Valid', licenseExp: 'Mar 2027', avatar: 'SD', violations: 1 },
-    { name: 'Michael Chen', score: 88, trips: 312, status: 'Active', license: 'Valid', licenseExp: 'Aug 2026', avatar: 'MC', violations: 2 },
-    { name: 'Jessica Wong', score: 91, trips: 156, status: 'Active', license: 'Valid', licenseExp: 'Nov 2027', avatar: 'JW', violations: 0 },
-    { name: 'David Miller', score: 78, trips: 267, status: 'Active', license: 'Expiring', licenseExp: 'Mar 2026', avatar: 'DM', violations: 4 },
-    { name: 'James Wilson', score: 85, trips: 189, status: 'On Leave', license: 'Valid', licenseExp: 'Jul 2027', avatar: 'JW', violations: 1 },
-    { name: 'Amanda Lee', score: 93, trips: 145, status: 'Active', license: 'Valid', licenseExp: 'Sep 2027', avatar: 'AL', violations: 0 },
-    { name: 'Robert Taylor', score: 72, trips: 301, status: 'Active', license: 'Expired', licenseExp: 'Jan 2026', avatar: 'RT', violations: 6 },
-]
+import { useState, useEffect } from 'react'
+import api from '../services/api'
 
-const lc = { Valid: 'bg-emerald-50 text-emerald-600', Expiring: 'bg-amber-50 text-amber-600', Expired: 'bg-red-50 text-red-600' }
-const stc = { Active: 'bg-emerald-50 text-emerald-600', 'On Leave': 'bg-slate-100 text-slate-600' }
-
-function ScoreBadge({ score }) {
-    const color = score >= 90 ? 'text-emerald-500' : score >= 80 ? 'text-blue-500' : score >= 70 ? 'text-amber-500' : 'text-red-500'
-    const bg = score >= 90 ? 'bg-emerald-50' : score >= 80 ? 'bg-blue-50' : score >= 70 ? 'bg-amber-50' : 'bg-red-50'
-    return <span className={`${bg} ${color} px-3 py-1 rounded-full text-sm font-bold`}>{score}</span>
-}
+const stc = { Active: 'bg-emerald-50 text-emerald-600', 'On Leave': 'bg-amber-50 text-amber-600', Suspended: 'bg-red-50 text-red-600' }
 
 export default function DriverPerformance() {
+    const [drivers, setDrivers] = useState([])
+    const [stats, setStats] = useState({})
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        Promise.all([api.get('/drivers/'), api.get('/drivers/stats')])
+            .then(([d, s]) => { setDrivers(d.data); setStats(s.data); setLoading(false) })
+            .catch(() => setLoading(false))
+    }, [])
+
+    if (loading) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div></div>
+
+    const getSafetyColor = (s) => s >= 90 ? 'text-emerald-600' : s >= 75 ? 'text-amber-500' : 'text-red-500'
+    const getSafetyBg = (s) => s >= 90 ? 'bg-emerald-500' : s >= 75 ? 'bg-amber-500' : 'bg-red-500'
+
     return (
         <div>
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold">Driver Performance & Safety</h1>
-                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">Monitor compliance, safety scores, and license status.</p>
-                </div>
-                <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white rounded-xl text-sm font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all">
-                    <span className="material-symbols-outlined text-[18px]">person_add</span>Add Driver
-                </button>
+            <div className="mb-8">
+                <h1 className="text-2xl font-bold">Driver Performance & Safety</h1>
+                <p className="text-sm text-[var(--color-text-secondary)] mt-1">Monitor driver metrics, safety scores, and compliance</p>
             </div>
 
-            {/* KPI */}
+            {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-5 mb-8">
                 {[
-                    { label: 'Total Drivers', value: '142', icon: 'group', color: 'from-blue-500 to-indigo-600' },
-                    { label: 'Avg Safety Score', value: '88.5', icon: 'shield', color: 'from-emerald-500 to-teal-600' },
-                    { label: 'Active Drivers', value: '118', icon: 'person', color: 'from-violet-500 to-purple-600' },
-                    { label: 'Expired Licenses', value: '3', icon: 'warning', color: 'from-red-500 to-rose-600' },
+                    { label: 'Total Drivers', value: stats.total, icon: 'group', color: 'from-blue-500 to-indigo-600' },
+                    { label: 'Active', value: stats.active, icon: 'person', color: 'from-emerald-500 to-teal-600' },
+                    { label: 'Avg Safety Score', value: stats.avg_safety_score?.toFixed(1), icon: 'shield', color: 'from-purple-500 to-pink-600' },
+                    { label: 'On Leave', value: stats.on_leave, icon: 'event_busy', color: 'from-amber-500 to-orange-600' },
                 ].map((s, i) => (
                     <div key={i} className="stat-card bg-white rounded-xl p-5 border border-[var(--color-border)] shadow-sm">
                         <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center text-white shadow-lg mb-3`}>
@@ -49,40 +44,40 @@ export default function DriverPerformance() {
                 ))}
             </div>
 
-            {/* Driver Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-                {drivers.map((d, i) => (
-                    <div key={i} className="stat-card bg-white rounded-xl p-5 border border-[var(--color-border)] shadow-sm">
+            {/* Driver Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {drivers.map(d => (
+                    <div key={d.id} className="stat-card bg-white rounded-xl p-5 border border-[var(--color-border)] shadow-sm">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-slate-600 font-bold text-sm">
-                                {d.avatar}
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
+                                {d.name?.split(' ').map(n => n[0]).join('')}
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold truncate">{d.name}</p>
-                                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${stc[d.status]}`}>{d.status}</span>
+                            <div className="flex-1">
+                                <p className="font-semibold">{d.name}</p>
+                                <p className="text-xs text-[var(--color-text-secondary)]">{d.driver_id}</p>
+                            </div>
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${stc[d.status]}`}>{d.status}</span>
+                        </div>
+
+                        {/* Safety Score Ring */}
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="relative w-16 h-16">
+                                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" className={getSafetyBg(d.safety_score).replace('bg-', 'stroke-')} stroke={d.safety_score >= 90 ? '#22c55e' : d.safety_score >= 75 ? '#f59e0b' : '#ef4444'} strokeWidth="3" strokeDasharray={`${d.safety_score}, 100`} strokeLinecap="round" />
+                                </svg>
+                                <span className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold ${getSafetyColor(d.safety_score)}`}>{d.safety_score}</span>
+                            </div>
+                            <div className="flex-1 space-y-2">
+                                <div className="flex justify-between text-xs"><span className="text-[var(--color-text-secondary)]">Trips</span><span className="font-semibold">{d.total_trips}</span></div>
+                                <div className="flex justify-between text-xs"><span className="text-[var(--color-text-secondary)]">Violations</span><span className={`font-semibold ${d.violations > 2 ? 'text-red-500' : ''}`}>{d.violations}</span></div>
+                                <div className="flex justify-between text-xs"><span className="text-[var(--color-text-secondary)]">License</span><span className={`font-semibold ${d.license_valid ? 'text-emerald-600' : 'text-red-500'}`}>{d.license_valid ? 'Valid' : 'Expired'}</span></div>
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-[var(--color-text-secondary)]">Safety Score</span>
-                                <ScoreBadge score={d.score} />
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-[var(--color-text-secondary)]">Trips</span>
-                                <span className="text-sm font-medium">{d.trips}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-[var(--color-text-secondary)]">License</span>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${lc[d.license]}`}>{d.license} • {d.licenseExp}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-[var(--color-text-secondary)]">Violations</span>
-                                <span className={`text-sm font-medium ${d.violations > 3 ? 'text-red-500' : d.violations > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>{d.violations}</span>
-                            </div>
+
+                        <div className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">phone</span>{d.phone || 'N/A'}
                         </div>
-                        <button className="w-full mt-4 py-2 rounded-lg border border-[var(--color-border)] text-xs font-medium text-[var(--color-text-secondary)] hover:bg-slate-50 transition-all">
-                            View Profile
-                        </button>
                     </div>
                 ))}
             </div>

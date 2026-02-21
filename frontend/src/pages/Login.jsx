@@ -1,22 +1,34 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth, ROLE_LABELS } from '../context/AuthContext'
 
 const roles = [
-    { id: 'admin', label: 'Administrator', desc: 'Full system access', icon: 'admin_panel_settings', color: 'from-blue-500 to-indigo-600' },
-    { id: 'manager', label: 'Fleet Manager', desc: 'Vehicle & driver management', icon: 'local_shipping', color: 'from-emerald-500 to-teal-600' },
-    { id: 'dispatcher', label: 'Dispatcher', desc: 'Trip & route planning', icon: 'map', color: 'from-amber-500 to-orange-600' },
-    { id: 'driver', label: 'Driver', desc: 'View assigned routes', icon: 'steering_wheel_heat', color: 'from-purple-500 to-pink-600' },
+    { id: 'admin', username: 'admin', password: 'admin123', label: 'Administrator', desc: 'Full system access', icon: 'admin_panel_settings', color: 'from-blue-500 to-indigo-600' },
+    { id: 'manager', username: 'manager', password: 'manager123', label: 'Fleet Manager', desc: 'Vehicle & driver management', icon: 'local_shipping', color: 'from-emerald-500 to-teal-600' },
+    { id: 'dispatcher', username: 'dispatcher', password: 'dispatch123', label: 'Dispatcher', desc: 'Trip & route planning', icon: 'map', color: 'from-amber-500 to-orange-600' },
+    { id: 'driver', username: 'driver', password: 'driver123', label: 'Driver', desc: 'View assigned routes', icon: 'steering_wheel_heat', color: 'from-purple-500 to-pink-600' },
 ]
 
 export default function Login() {
     const [selectedRole, setSelectedRole] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
     const navigate = useNavigate()
+    const { login } = useAuth()
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         if (!selectedRole) return
         setLoading(true)
-        setTimeout(() => navigate('/'), 800)
+        setError('')
+        try {
+            const role = roles.find(r => r.id === selectedRole)
+            await login(role.username, role.password)
+            navigate('/')
+        } catch (err) {
+            setError(err.response?.data?.detail || 'Login failed. Is the backend running?')
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -81,8 +93,16 @@ export default function Login() {
                     <div className="mb-8">
                         <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">Welcome back</h2>
                         <p className="text-[var(--color-text-secondary)] mt-2">Choose your role to continue</p>
-                        <p className="text-xs text-slate-400 mt-1">This role will be associated with your session.</p>
+                        <p className="text-xs text-slate-400 mt-1">Each role has different page access and permissions.</p>
                     </div>
+
+                    {/* Error message */}
+                    {error && (
+                        <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[18px]">error</span>
+                            {error}
+                        </div>
+                    )}
 
                     {/* Role selection */}
                     <div className="space-y-3 mb-8">
@@ -91,8 +111,8 @@ export default function Login() {
                                 key={role.id}
                                 onClick={() => setSelectedRole(role.id)}
                                 className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left ${selectedRole === role.id
-                                        ? 'border-[var(--color-primary)] bg-blue-50 shadow-lg shadow-blue-500/10'
-                                        : 'border-[var(--color-border)] bg-white hover:border-slate-300 hover:shadow-md'
+                                    ? 'border-[var(--color-primary)] bg-blue-50 shadow-lg shadow-blue-500/10'
+                                    : 'border-[var(--color-border)] bg-white hover:border-slate-300 hover:shadow-md'
                                     }`}
                             >
                                 <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${role.color} flex items-center justify-center text-white shadow-lg`}>
@@ -117,8 +137,8 @@ export default function Login() {
                         onClick={handleLogin}
                         disabled={!selectedRole || loading}
                         className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${selectedRole
-                                ? 'bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0'
-                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            ? 'bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                             }`}
                     >
                         {loading ? (
