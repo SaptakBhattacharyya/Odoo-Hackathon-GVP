@@ -1,0 +1,1 @@
+﻿src/app/dashboard/analytics/page.tsx(143,174): error TS18048: 'percent' is possibly 'undefined'.
