@@ -1,70 +1,77 @@
-# Odoo-Hackathon-GVP
 <div align="center">
 
-# 🚚 FleetFlow — Fleet Management System
+# 🚛 FleetMetrics — Fleet Management System
 
-### Full-Stack, Role-Based Fleet Operations Platform
+### Full-Stack Fleet Platform with AI-Powered Operations Assistant
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)]
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)]
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)]
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)]
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)]
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-UI-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)]
-[![Hackathon](https://img.shields.io/badge/Odoo_Hackathon-2026-orange?style=for-the-badge)]
+[![Gemini](https://img.shields.io/badge/Gemini-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)]
 
-FleetFlow is a **production-grade fleet management system** built to streamline vehicle dispatch, driver operations, maintenance tracking, and real-time analytics.  
-Designed with **role-based access control, real-time updates, and operational safety** in mind.
+A full-stack fleet management platform with an **AI-powered chatbot**, built for logistics companies to manage **vehicles, drivers, trips, expenses, maintenance, and analytics** in one unified dashboard.
 
 </div>
 
 ---
 
-## 🚀 Features
+## ⚡ Tech Stack
 
-- 🔐 Role-Based Access Control (Manager / Dispatcher / Driver)
-- 🚗 Vehicle & Driver Registry
-- 📍 Trip Dispatch & Real-Time Status Tracking
-- 🛠 Maintenance & Expense Logging
-- 📊 Operational Analytics & ROI Metrics
-- ⚡ Real-Time Updates via Supabase Realtime
-- 📄 PDF & CSV Export for Reports
-
----
-
-## 🛠 Tech Stack
-
-**Frontend**
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS + shadcn/ui  
-- Zustand (Global State)
-- TanStack Query (Server State)
-- React Hook Form + Zod (Validation)
-- Recharts (Analytics)
-- jsPDF + file-saver (Exports)
-
-**Backend**
-- Supabase (PostgreSQL 15)
-- Supabase Auth
-- Supabase Realtime
-- Supabase Storage
+| Layer | Technology |
+|------|------------|
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS 4 |
+| Backend | Supabase (Auth, PostgreSQL, RLS, RPC) |
+| AI Chatbot | FastAPI, LangChain, Google Gemini 2.5 Flash, ChromaDB |
+| Charts | Recharts |
+| State | Zustand, TanStack Query |
+| Forms | React Hook Form + Zod |
 
 ---
 
-## 🏗 Project Structure (Next.js 14 App Router)
+## ✨ Key Features
+
+- 📊 **Dashboard** — Real-time fleet KPIs & performance charts  
+- 🚗 **Vehicles** — CRUD, lifecycle status (available/on_trip/in_shop/retired)  
+- 👨‍✈️ **Drivers** — License management, safety scores, trip history  
+- 🧭 **Trips** — Full lifecycle (draft → dispatched → in_transit → completed/cancelled)  
+- 💰 **Expenses** — Approval workflow (fuel, toll, parking, repair, misc)  
+- 🛠 **Maintenance** — Issue logging with severity levels  
+- 👥 **Users** — Role-based access (manager, dispatcher, safety_officer, finance)  
+- 📈 **Analytics** — Utilization, fuel trends, cost breakdowns  
+- 🤖 **AI Chatbot** — RAG-based fleet assistant (Gemini + ChromaDB)  
+- 🔐 **Auth** — Google OAuth + Email/Password with manager approval flow  
+
+---
+
+## 📁 Project Structure
 
 ```txt
-/app
-  /(auth)            → Authentication (Login / Register)
-  /(dashboard)       → Main dashboard shell
-  layout.tsx         → Root layout
-/components          → Reusable UI components (shadcn/ui)
-/hooks               → Custom hooks (Supabase, queries)
-/lib
-  supabase-client.ts → Supabase client setup
-  utils.ts           → Shared utilities
-/types               → TypeScript types (DB schema)
-drivers (License info, safety score, duty status).
-trips (Route data, assigned vehicle/driver, timestamps).
-expenses and maintenance_logs (Financial and operational history).
-4. Real-time Features
-Utilizes Supabase Realtime to push database changes to the dashboard immediately, ensuring dispatchers and managers see the latest fleet status without page refreshes.
+fleetmetrics/
+├── src/
+│   ├── app/
+│   │   ├── dashboard/
+│   │   │   ├── analytics/
+│   │   │   ├── drivers/
+│   │   │   ├── expenses/
+│   │   │   ├── maintenance/
+│   │   │   ├── trips/
+│   │   │   ├── users/
+│   │   │   └── vehicles/
+│   │   ├── auth/
+│   │   ├── login/
+│   │   └── pending-approval/
+│   ├── components/
+│   │   ├── ChatWidget.tsx
+│   │   └── dashboard/
+│   └── lib/
+│       ├── supabase/
+│       └── hooks/
+├── chatbot/
+│   ├── main.py
+│   ├── rag_chain.py
+│   ├── data_loader.py
+│   ├── config.py
+│   ├── knowledge_base/
+│   └── requirements.txt
+└── .env.local
